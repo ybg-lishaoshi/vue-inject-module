@@ -92,5 +92,34 @@ var VueModx = require('vue-modx')
 var Module1 = require('module1')
 var Module2 = require('module2')
 
-Vue.use(VueModx, { modules: [Module1, Module2] })
+Vue.use(VueModx, { modules: [Module1, Module2], config: {} })
+```
+
+## 实现Module结构
+
+```js
+const module = {
+    name: "module2",
+    dependsOn: [ "module1" ],
+    extensionPoints: {
+        "module2.somepoint": function(pluginRegistry, obj) {
+            pluginRegistry.moduleVarAppend("module2", "somevar", obj);
+        }
+    },
+    extensions: {
+        // extend other module
+        "module1.menu": {
+            "name": "Module2 Menu",
+            "roles": ["admin"]
+        },
+        // extend my own module
+        "module2.somepoint": "Item1"
+    },
+    start(vue, pluginRegistry) {
+        // do some final initialization
+        console.log(pluginRegistry.moduleVarGet("module2", "somevar"));
+    }
+}
+
+export default module
 ```

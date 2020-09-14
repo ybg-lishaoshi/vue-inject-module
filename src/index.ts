@@ -1,5 +1,8 @@
 type ExtensionCallback = (pluginRegistry: PluginRegistry, obj: any) => void;
 
+/**
+ * Define a plugin module
+ */
 interface Module {
     // This Module's Name
     name: string;
@@ -8,14 +11,20 @@ interface Module {
     extensionPoints?: object;
     extensions?: object;
     // Startup Code
-    start: (vue, pluginRegisty: PluginRegistry) => void;
+    start?: (vue, pluginRegisty: PluginRegistry) => void;
 }
 
+/**
+ * Used to start the framework
+ */
 interface ModuleConfig {
     modules: Array<Module>;
     config?: object;
 }
 
+/**
+ * The core framework is to provide a plugin registry
+ */
 class PluginRegistry {
 
     extensionCallbacks: Map<string, ExtensionCallback>;
@@ -56,7 +65,7 @@ class PluginRegistry {
         return this._ensureMod(moduleName)[varname];
     }
 
-    configGet(varname: string) : any {
+    configGet(varname: string): any {
         return this.config[varname];
     }
 
@@ -69,6 +78,11 @@ class PluginRegistry {
 
 }
 
+/**
+ * Used to calculate startup sequence using the dependsOn specification
+ * 
+ * @param modules 
+ */
 function calculateStartupSeq(modules: Array<Module>): Array<Module> {
     return modules;
 }
@@ -90,7 +104,10 @@ const plugin = {
                     registry.registerExtension(k, mod.extensions[k]);
                 }
             }
-            mod.start(Vue, registry)
+            // start module (if any)
+            if (mod.start) {
+                mod.start(Vue, registry)
+            }
         })
     }
 }
