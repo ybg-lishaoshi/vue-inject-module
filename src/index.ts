@@ -87,7 +87,7 @@ const plugin = {
             }
             if (mod.extensions) {
                 for (const k in mod.extensions) {
-                    registry.registerExtension(k, mod.extensionPoints[k]);
+                    registry.registerExtension(k, mod.extensions[k]);
                 }
             }
             mod.start(Vue, registry)
