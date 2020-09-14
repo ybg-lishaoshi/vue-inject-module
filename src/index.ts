@@ -5,8 +5,8 @@ interface Module {
     name: string;
     // Depends on which module (names)
     dependsOn?: Array<string>;
-    extensionPoints?: Map<string, ExtensionCallback>;
-    extensions?: Map<string, any>;
+    extensionPoints?: object;
+    extensions?: object;
     // Startup Code
     start: (vue, pluginRegisty: PluginRegistry) => void;
 }
@@ -81,14 +81,14 @@ const plugin = {
         let startupSeq = calculateStartupSeq(ops.modules);
         startupSeq.forEach(mod => {
             if (mod.extensionPoints) {
-                mod.extensionPoints.forEach((value, key) => {
-                    registry.registerExtensionPoint(key, value);
-                });
+                for (const k in mod.extensionPoints) {
+                    registry.registerExtensionPoint(k, mod.extensionPoints[k]);
+                }
             }
             if (mod.extensions) {
-                mod.extensions.forEach((value, key) => {
-                    registry.registerExtension(key, value);
-                });
+                for (const k in mod.extensions) {
+                    registry.registerExtension(k, mod.extensionPoints[k]);
+                }
             }
             mod.start(Vue, registry)
         })
