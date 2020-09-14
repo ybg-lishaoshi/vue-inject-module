@@ -44,7 +44,7 @@ class PluginRegistry {
     }
 
     moduleVarSet(moduleName: string, varname: string, obj: any) {
-        this.moduleVariables[moduleName][varname] = obj;
+        this._ensureMod(moduleName)[varname] = obj;
     }
 
     moduleVarGet(moduleName: string, varname: string) {
