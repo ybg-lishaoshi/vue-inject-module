@@ -28,4 +28,69 @@
 3. 注册路由
 
 
+## 支持的扩展内容
 
+1. 路由和其对应界面
+2. 公共位置的贡献
+   1. 菜单（附角色要求定义）
+   2. 头部（如任务进度）
+   3. 右上侧个人信息菜单扩展
+   4. 其他
+3. 组件扩展点定义，让对应的组件扩展嵌入到指定区域
+4. 功能扩展（体现在处理上，而不是界面上）
+
+
+## 扩展核心重点
+
+* 提供命名空间注册表，让模块增加自己需要的【点】
+* 插件框架提供注册和取值功能
+* 注册值可以是普通静态值、函数或对象，为针对不同的场景
+* 模块启动时，框架会调用模块的启动方法，让模块有机会注册自己的扩展内容
+
+
+```mermaid
+sequenceDiagram
+    启动框架 ->> 模块1: 获取依赖关系
+    启动框架 ->> 模块2: 获取依赖关系
+
+    启动框架 ->> 模块1: 按依赖关系顺序启动
+    模块1 ->> 启动框架: 注册扩展点和扩展
+
+    启动框架 ->> 模块2: 按依赖关系顺序启动
+    模块2 ->> 启动框架: 注册扩展点和扩展
+
+```
+
+
+```mermaid
+classDiagram
+    class PluginRegistry {
+        registerExtensionPoint(extensionPointName, extensionCallback);
+        registerExtension(extensionPointName, obj);
+        moduleVarAppend(moduleName, var, obj);
+        moduleVarSet(moduleName, var, obj);
+        moduleVarGet(moduleName, var);
+    }
+```
+
+```js
+// when registerExtension is called, extensionCallback will be invoked
+function extensionCallback(pluginRegistry, obj) {
+    pluginRegistry.moduleVarAppend('mymodule', 'menu', obj);
+}
+```
+
+```js
+// in vue
+const menu = this.$pluginRegistry.moduleVarGet("mymodule");
+```
+
+## 如何使用
+
+```js
+var VueModx = require('vue-modx')
+var Module1 = require('module1')
+var Module2 = require('module2')
+
+Vue.use(VueModx, { modules: [Module1, Module2] })
+```
