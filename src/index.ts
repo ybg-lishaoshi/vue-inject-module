@@ -66,9 +66,10 @@ function calculateStartupSeq(modules: Array<Module>): Array<Module> {
 
 const plugin = {
     install(Vue, ops: ModuleConfig = { modules: [] }) {
-        Vue.prototype.$pluginRegistry = new PluginRegistry();
+        let registry = new PluginRegistry();
+        Vue.prototype.$pluginRegistry = registry;
         let startupSeq = calculateStartupSeq(ops.modules);
-        startupSeq.forEach(mod => mod.start(Vue, Vue.$pluginRegistry))
+        startupSeq.forEach(mod => mod.start(Vue, registry))
     }
 }
 
