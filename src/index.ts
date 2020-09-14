@@ -104,11 +104,13 @@ const plugin = {
                     registry.registerExtension(k, mod.extensions[k]);
                 }
             }
+        })
+        startupSeq.forEach(mod => {
             // start module (if any)
             if (mod.start) {
                 mod.start(Vue, registry)
             }
-        })
+        });
     }
 }
 
