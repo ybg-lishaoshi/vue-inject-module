@@ -11,16 +11,19 @@ interface Module {
 
 interface ModuleConfig {
     modules: Array<Module>;
+    config: object;
 }
 
 class PluginRegistry {
 
     extensionCallbacks: Map<string, ExtensionCallback>;
     moduleVariables: Map<string, Map<string, any>>;
+    config: object;
 
-    constructor() {
+    constructor(config) {
         this.extensionCallbacks = new Map<string, ExtensionCallback>();
         this.moduleVariables = new Map<string, Map<string, any>>();
+        this.config = config;
     }
 
     registerExtensionPoint(extensionPointName: string, extensionCallback: ExtensionCallback) {
@@ -51,6 +54,10 @@ class PluginRegistry {
         return this._ensureMod(moduleName)[varname];
     }
 
+    configGet(varname: string) : any {
+        return this.config[varname];
+    }
+
     _ensureMod(moduleName: string) {
         if (!this.moduleVariables[moduleName]) {
             this.moduleVariables[moduleName] = new Map<string, any>();
@@ -65,8 +72,9 @@ function calculateStartupSeq(modules: Array<Module>): Array<Module> {
 }
 
 const plugin = {
-    install(Vue, ops: ModuleConfig = { modules: [] }) {
-        let registry = new PluginRegistry();
+    install(Vue, ops: ModuleConfig = { modules: [], config: {} }) {
+        let registry = new PluginRegistry(ops.config);
+        Vue.prototype.$pluginConfig = ops.config;
         Vue.prototype.$pluginRegistry = registry;
         let startupSeq = calculateStartupSeq(ops.modules);
         startupSeq.forEach(mod => mod.start(Vue, registry))
