@@ -2,7 +2,7 @@ stages:
   - build
   - deploy
 build:
-  image: 'node:10.10.0-jessie'
+  image: 'node:12.18.3-stretch-slim'
   stage: build
   cache:
     paths:
@@ -19,7 +19,7 @@ build:
   tags:
     - docker
 publish:
-  image: 'node:10.10.0-jessie'
+  image: 'node:12.18.3-stretch-slim'
   stage: deploy
   script:
     - 'echo export default $CI_PIPELINE_ID > version.js'
