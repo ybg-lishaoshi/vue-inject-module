@@ -83,8 +83,38 @@ class PluginRegistry {
  * 
  * @param modules 
  */
-function calculateStartupSeq(modules: Array<Module>): Array<Module> {
-    return modules;
+export function calculateStartupSeq(modules: Array<Module>): Array<Module> {
+
+    let rootModules = []; // push Module if no deps related
+    let rootKeys = []; // root module keys
+    let remainModules = modules;
+
+    do {
+
+        let progress = false;
+        remainModules.forEach(m => {
+            if (m.dependsOn == null || m.dependsOn.length == 0 || m.dependsOn.every(dep => rootKeys.find(x => dep === x))) {
+                rootModules.push(m);
+                rootKeys.push(m.name);
+                progress = true;
+            }
+        });
+        remainModules = remainModules.filter(m => rootKeys.indexOf(m.name) == -1);
+
+        if (remainModules.length > 0 && !progress) {
+            let moduleNames = remainModules.map(m => m.name);
+            let missing = [].concat(...remainModules.map(m => m.dependsOn)) //
+                .filter(m => !moduleNames.includes(m)) //
+                .filter((el, i, arr) => arr.indexOf(el) === i); // dedup
+            let base = remainModules.filter(m => m.dependsOn.find(m => missing.includes(m))) //
+                .map(m => m.name) //
+                .filter((el, i, arr) => arr.indexOf(el) === i); // dedup
+            throw "Unresolved Dependencies for " + base + " (missing: " + missing + ")";
+        }
+
+    } while (remainModules.length > 0)
+
+    return rootModules;
 }
 
 const plugin = {
@@ -114,4 +144,4 @@ const plugin = {
     }
 }
 
-export default plugin
+export default plugin;
