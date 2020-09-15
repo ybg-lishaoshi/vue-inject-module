@@ -98,7 +98,7 @@ Vue.use(VueModx, { modules: [Module1, Module2], config: {} })
 ## 实现Module结构
 
 ```js
-const module = {
+export default {
     name: "module2",
     dependsOn: [ "module1" ],
     extensionPoints: {
@@ -120,6 +120,4 @@ const module = {
         console.log(pluginRegistry.moduleVarGet("module2", "somevar"));
     }
 }
-
-export default module
 ```
