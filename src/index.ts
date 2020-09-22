@@ -117,12 +117,15 @@ export function calculateStartupSeq(modules: Array<Module>): Array<Module> {
     return rootModules;
 }
 
+let modules = null;
+
 const plugin = {
     install(Vue, ops: ModuleConfig = { modules: [], config: {} }) {
         let registry = new PluginRegistry(ops.config);
         Vue.prototype.$pluginConfig = ops.config;
         Vue.prototype.$pluginRegistry = registry;
         let startupSeq = calculateStartupSeq(ops.modules);
+        modules = startupSeq;
         startupSeq.forEach(mod => {
             if (mod.extensionPoints) {
                 for (const k in mod.extensionPoints) {
@@ -131,7 +134,12 @@ const plugin = {
             }
             if (mod.extensions) {
                 for (const k in mod.extensions) {
-                    registry.registerExtension(k, mod.extensions[k]);
+                    const ext = mod.extensions[k];
+                    if (typeof ext === 'function') {
+                        registry.registerExtension(k, ext(this, registry));
+                    } else {
+                        registry.registerExtension(k, ext);
+                    }
                 }
             }
         })
@@ -141,6 +149,15 @@ const plugin = {
                 mod.start(Vue, registry)
             }
         });
+    },
+    modules() {
+        return modules;
+    },
+    moduleByName(name: string) {
+        if (modules) {
+            return modules.find(m => m.name === name);
+        }
+        return undefined;
     }
 }
 

@@ -121,3 +121,9 @@ export default {
     }
 }
 ```
+
+* extensions 里面可以使用函数来返回扩展值
+* 若使用函数返回，其函数的入参 (VuexModule, PluginRegistry)
+* VuexModule提供以下方法，方便插件调用：
+  * modules()： 返回所有模块
+  * moduleByName(name: string)： 查找某一个模块

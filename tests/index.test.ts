@@ -39,3 +39,52 @@ test('Module Loading Sequence', () => {
   ])).toThrowError("Unresolved Dependencies for c,a (missing: x)")
 
 });
+
+
+test('Extension Tests', async () => {
+
+  // extend by static and function result
+  expect(await (async () => {
+    const Vue = await import('vue')
+    const VueModx = await import('../src/index')
+
+    let extObj = [];
+    const Mod1 = {
+      name: "module1",
+      moduleSpaceVar: "Module Space Variable",
+      extensionPoints: {
+        testStatic(reg, obj) {
+          extObj.push(obj);
+        },
+        testFunc(reg, obj) {
+          extObj.push(obj);
+        },
+        testWithModx(reg, obj) {
+          extObj.push(obj);
+        }
+      },
+      extensions: {
+        testStatic: {
+          "Hello": "World"
+        },
+        testFunc() {
+          return {
+            "Hello": "Functional World"
+          };
+        },
+        testWithModx(modx) {
+          const fromModule = modx.moduleByName("module1").moduleSpaceVar;
+          return {
+            "ModuleDep": fromModule
+          }
+        }
+      }
+    };
+    Vue.default.use(VueModx.default, {
+      modules: [Mod1]
+    });
+    return extObj;
+  })()).toStrictEqual([{ "Hello": "World" }, { "Hello": "Functional World" }, { "ModuleDep": "Module Space Variable" }]);
+
+
+});
