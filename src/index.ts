@@ -1,4 +1,6 @@
-type ExtensionCallback = (pluginRegistry: PluginRegistry, obj: any) => void;
+import Vue from 'vue';
+
+type ExtensionCallback = (context: StartupContext, obj: any) => void;
 
 /**
  * Define a plugin module
@@ -11,7 +13,7 @@ interface Module {
     extensionPoints?: object;
     extensions?: object;
     // Startup Code
-    start?: (vue, pluginRegisty: PluginRegistry) => void;
+    start?: (context: StartupContext) => void;
 }
 
 /**
@@ -20,6 +22,19 @@ interface Module {
 interface ModuleConfig {
     modules: Array<Module>;
     config?: object;
+}
+
+class StartupContext {
+    vue: Vue;
+    vueModx: object;
+    registry: PluginRegistry;
+    config?: object;
+    constructor(vue: Vue, vueModx: object, registry: PluginRegistry, config?: object) {
+        this.vue = vue;
+        this.vueModx = vueModx;
+        this.registry = registry;
+        this.config = config;
+    }
 }
 
 /**
@@ -41,9 +56,9 @@ class PluginRegistry {
         this.extensionCallbacks[extensionPointName] = extensionCallback;
     }
 
-    registerExtension(extensionPointName: string, obj: any) {
+    registerExtension(extensionPointName: string, obj: any): ((context: StartupContext) => void) {
         if (this.extensionCallbacks[extensionPointName]) {
-            this.extensionCallbacks[extensionPointName](this, obj);
+            return (context) => this.extensionCallbacks[extensionPointName](context, obj);
         } else {
             console.log("Invalid Extension Point: ", extensionPointName);
         }
@@ -126,6 +141,8 @@ const plugin = {
         Vue.prototype.$pluginRegistry = registry;
         let startupSeq = calculateStartupSeq(ops.modules);
         modules = startupSeq;
+
+        const context = new StartupContext(Vue, this, registry, ops.config);
         startupSeq.forEach(mod => {
             if (mod.extensionPoints) {
                 for (const k in mod.extensionPoints) {
@@ -136,9 +153,9 @@ const plugin = {
                 for (const k in mod.extensions) {
                     const ext = mod.extensions[k];
                     if (typeof ext === 'function') {
-                        registry.registerExtension(k, ext(this, registry));
+                        registry.registerExtension(k, ext(context))(context);
                     } else {
-                        registry.registerExtension(k, ext);
+                        registry.registerExtension(k, ext)(context);
                     }
                 }
             }
@@ -146,7 +163,7 @@ const plugin = {
         startupSeq.forEach(mod => {
             // start module (if any)
             if (mod.start) {
-                mod.start(Vue, registry)
+                mod.start(context)
             }
         });
     },

@@ -72,8 +72,8 @@ test('Extension Tests', async () => {
             "Hello": "Functional World"
           };
         },
-        testWithModx(modx) {
-          const fromModule = modx.moduleByName("module1").moduleSpaceVar;
+        testWithModx({ vueModx }) {
+          const fromModule = vueModx.moduleByName("module1").moduleSpaceVar;
           return {
             "ModuleDep": fromModule
           }

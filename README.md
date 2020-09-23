@@ -73,10 +73,28 @@ classDiagram
     }
 ```
 
+回调第一个参数时 StartupContext, 结构如下：
+
+```json
+{
+    "vue": Vue,  // vue during Vue.use()
+    "vueModx": VuexModule, // vuex-module during Vue.use()
+    "registry": PluginRegistry,
+    "config": { Options... }
+}
+```
+
 ```js
 // when registerExtension is called, extensionCallback will be invoked
-function extensionCallback(pluginRegistry, obj) {
-    pluginRegistry.moduleVarAppend('mymodule', 'menu', obj);
+function extensionCallback(context, obj) {
+    context.registry.moduleVarAppend('mymodule', 'menu', obj);
+}
+```
+
+```js
+// 简化可以用{}
+function extensionCallback({registry}, obj) {
+    registry.moduleVarAppend('mymodule', 'menu', obj);
 }
 ```
 
@@ -102,8 +120,8 @@ export default {
     name: "module2",
     dependsOn: [ "module1" ],
     extensionPoints: {
-        "module2.somepoint": function(pluginRegistry, obj) {
-            pluginRegistry.moduleVarAppend("module2", "somevar", obj);
+        "module2.somepoint": function({registry}, obj) {
+            registry.moduleVarAppend("module2", "somevar", obj);
         }
     },
     extensions: {
@@ -115,15 +133,15 @@ export default {
         // extend my own module
         "module2.somepoint": "Item1"
     },
-    start(vue, pluginRegistry) {
+    start({registry}) {
         // do some final initialization
-        console.log(pluginRegistry.moduleVarGet("module2", "somevar"));
+        console.log(registry.moduleVarGet("module2", "somevar"));
     }
 }
 ```
 
 * extensions 里面可以使用函数来返回扩展值
-* 若使用函数返回，其函数的入参 (VuexModule, PluginRegistry)
+* 若使用函数返回，其函数的入参 (context: StartupContext)
 * VuexModule提供以下方法，方便插件调用：
   * modules()： 返回所有模块
   * moduleByName(name: string)： 查找某一个模块
