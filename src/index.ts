@@ -118,7 +118,7 @@ export function calculateStartupSeq(modules: Array<Module>): Array<Module> {
 
         if (remainModules.length > 0 && !progress) {
             let moduleNames = remainModules.map(m => m.name);
-            let missing = [].concat(...remainModules.map(m => m.dependsOn)) //
+            let missing = [].concat(...remainModules.map(m => m.dependsOn.filter(n => !rootKeys.includes(n)))) //
                 .filter(m => !moduleNames.includes(m)) //
                 .filter((el, i, arr) => arr.indexOf(el) === i); // dedup
             let base = remainModules.filter(m => m.dependsOn.find(m => missing.includes(m))) //

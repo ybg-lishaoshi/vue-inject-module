@@ -38,6 +38,12 @@ test('Module Loading Sequence', () => {
     { name: "a", dependsOn: ["x"] }
   ])).toThrowError("Unresolved Dependencies for c,a (missing: x)")
 
+  // fail dependencies
+  expect(() => calculateStartupSeq([
+    { name: "c", dependsOn: ["a", "b"] },
+    { name: "b" }
+  ])).toThrowError("Unresolved Dependencies for c (missing: a)")
+
 });
 
 
