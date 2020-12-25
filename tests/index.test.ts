@@ -94,3 +94,27 @@ test('Extension Tests', async () => {
 
 
 });
+
+test('Embedded Module Tests', async () => {
+
+  const Mod2 = {
+    name: "module2"
+  };
+  const Mod3 = {
+    name: "module3",
+    dependsOn: [Mod2]
+  }
+  const Mod1 = {
+    name: "module1",
+    dependsOn: ['module2', Mod3]
+  };
+
+  expect(calculateStartupSeq([
+    Mod1, Mod2
+  ])).toStrictEqual([
+    { name: "module2" },
+    { name: "module3", dependsOn: ["module2"] },
+    { name: "module1", dependsOn: ["module2", "module3"] }
+  ]);
+
+})

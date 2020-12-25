@@ -8,8 +8,8 @@ type ExtensionCallback = (context: StartupContext, obj: any) => void;
 interface Module {
     // This Module's Name
     name: string;
-    // Depends on which module (names)
-    dependsOn?: Array<string>;
+    // Depends on which module (names / actual module object)
+    dependsOn?: Array<string | Module>;
     extensionPoints?: object;
     extensions?: object;
     // Startup Code
@@ -94,6 +94,52 @@ class PluginRegistry {
 }
 
 /**
+ * as module dependsOn may contain Module object, expand and make dependsOn string array again.
+ * 
+ * @param modules 
+ */
+function standardize(modules: Array<Module>): Array<Module> {
+    let result = [];
+    let names = [];
+    for (var m of modules) {
+        const exp = expand(m)
+        for (var ins of exp) {
+            if (names.find(n => n === ins.name)) {
+                continue
+            } else {
+                names.push(ins.name)
+                result.push(ins)
+            }
+        }
+    }
+    return result;
+}
+
+function expand(module: Module): Array<Module> {
+    let result = [];
+    if (module) {
+
+        if (module.dependsOn) {
+
+            const deps = module.dependsOn;
+            const modDeps = deps.filter(m => typeof m !== 'string') as Module[];
+            result = result.concat(standardize(modDeps))
+            const stringDeps = module.dependsOn.map(m => {
+                if (typeof m === 'string') {
+                    return m;
+                } else {
+                    return (m as Module).name;
+                }
+            })
+
+            module.dependsOn = stringDeps; // fix as string dependencies
+        }
+        result.push(module)
+    }
+    return result
+}
+
+/**
  * Used to calculate startup sequence using the dependsOn specification
  * 
  * @param modules 
@@ -102,7 +148,7 @@ export function calculateStartupSeq(modules: Array<Module>): Array<Module> {
 
     let rootModules = []; // push Module if no deps related
     let rootKeys = []; // root module keys
-    let remainModules = modules;
+    let remainModules = standardize(modules);
 
     do {
 
