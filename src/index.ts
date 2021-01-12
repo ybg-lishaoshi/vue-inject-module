@@ -105,6 +105,7 @@ function standardize(modules: Array<Module>): Array<Module> {
         const exp = expand(m)
         for (var ins of exp) {
             if (names.find(n => n === ins.name)) {
+                console.log('% module name' + ins.name + 'already exists', 'color: #f70303')
                 continue
             } else {
                 names.push(ins.name)
@@ -122,7 +123,9 @@ function expand(module: Module): Array<Module> {
         if (module.dependsOn) {
 
             const deps = module.dependsOn;
+            // 找出dependsOn集合中不是字符串的依赖
             const modDeps = deps.filter(m => typeof m !== 'string') as Module[];
+            // 递归查找dependsOn
             result = result.concat(standardize(modDeps))
             const stringDeps = module.dependsOn.map(m => {
                 if (typeof m === 'string') {
