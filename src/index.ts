@@ -105,7 +105,7 @@ function standardize(modules: Array<Module>): Array<Module> {
         const exp = expand(m)
         for (var ins of exp) {
             if (names.find(n => n === ins.name)) {
-                console.log('% module name' + ins.name + 'already exists', 'color: #f70303')
+                console.log('%c module name' + ins.name + 'already exists', 'color: #f70303')
                 continue
             } else {
                 names.push(ins.name)
